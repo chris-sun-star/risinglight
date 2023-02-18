@@ -235,7 +235,6 @@ mod tests {
                     ColumnCatalog::new(0, DataTypeKind::Int32.not_null().to_column("a".into())),
                     ColumnCatalog::new(1, DataTypeKind::Int32.not_null().to_column("b".into())),
                 ],
-                false,
                 vec![],
             )
             .unwrap();

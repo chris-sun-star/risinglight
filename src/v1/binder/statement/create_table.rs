@@ -219,9 +219,7 @@ mod tests {
             Err(BindError::DuplicatedColumn("a".into()))
         );
 
-        catalog
-            .add_table(0, "t3".into(), vec![], false, vec![])
-            .unwrap();
+        catalog.add_table(0, "t3".into(), vec![], vec![]).unwrap();
         assert_eq!(
             binder.bind_create_table(&stmts[2]),
             Err(BindError::DuplicatedTable("t3".into()))

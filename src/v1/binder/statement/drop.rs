@@ -62,7 +62,7 @@ mod tests {
         let mut binder = Binder::new(catalog.clone());
 
         catalog
-            .add_table(0, "mytable".into(), vec![], false, vec![])
+            .add_table(0, "mytable".into(), vec![], vec![])
             .unwrap();
 
         let stmts = parse("drop table mytable").unwrap();
