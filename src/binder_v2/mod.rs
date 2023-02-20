@@ -79,6 +79,8 @@ pub enum BindError {
     OrderKeyNotInDistinct,
     #[error("operation on internal table is not supported")]
     NotSupportedOnInternalTable,
+    #[error("invalid argument: {0}")]
+    InvalidArgument(String),
 }
 
 /// The binder resolves all expressions referring to schema objects such as
