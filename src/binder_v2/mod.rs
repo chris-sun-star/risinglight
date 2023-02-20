@@ -126,8 +126,9 @@ impl Binder {
                 name,
                 columns,
                 constraints,
+                with_options,
                 ..
-            } => self.bind_create_table(name, &columns, &constraints),
+            } => self.bind_create_table(name, columns, constraints, with_options),
             Statement::Drop {
                 object_type,
                 if_exists,

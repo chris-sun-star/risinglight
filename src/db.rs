@@ -52,14 +52,14 @@ impl Database {
         }
     }
 
-    pub async fn shutdown(&self) -> Result<(), Error> {
+    pub async fn shutdown(&self) -> Result<()> {
         if let StorageImpl::SecondaryStorage(storage) = &self.storage {
             storage.shutdown().await?;
         }
         Ok(())
     }
 
-    fn run_desc(&self, table_name: &str) -> Result<Vec<Chunk>, Error> {
+    fn run_desc(&self, table_name: &str) -> Result<Vec<Chunk>> {
         let mut column_id = I32ArrayBuilder::new();
         let mut column_name = Utf8ArrayBuilder::new();
         let mut column_type = Utf8ArrayBuilder::new();
@@ -101,7 +101,7 @@ impl Database {
         )])])
     }
 
-    fn run_dt(&self) -> Result<Vec<Chunk>, Error> {
+    fn run_dt(&self) -> Result<Vec<Chunk>> {
         let mut schema_id_vec = I32ArrayBuilder::new();
         let mut schema_vec = Utf8ArrayBuilder::new();
         let mut table_id_vec = I32ArrayBuilder::new();
@@ -125,7 +125,7 @@ impl Database {
         )])])
     }
 
-    pub async fn run_internal(&self, cmd: &str) -> Result<Vec<Chunk>, Error> {
+    pub async fn run_internal(&self, cmd: &str) -> Result<Vec<Chunk>> {
         if let Some((cmd, arg)) = cmd.split_once(' ') {
             if cmd == "stat" {
                 if let StorageImpl::SecondaryStorage(ref storage) = self.storage {
@@ -201,7 +201,7 @@ impl Database {
     }
 
     /// Run SQL queries and return the outputs.
-    pub async fn run(&self, sql: &str) -> Result<Vec<Chunk>, Error> {
+    pub async fn run(&self, sql: &str) -> Result<Vec<Chunk>> {
         if let Some(cmdline) = sql.trim().strip_prefix('\\') {
             return self.run_internal(cmdline).await;
         }
@@ -232,7 +232,7 @@ impl Database {
     }
 
     /// Run SQL queries using query engine v1.
-    async fn run_v1(&self, sql: &str) -> Result<Vec<Chunk>, Error> {
+    async fn run_v1(&self, sql: &str) -> Result<Vec<Chunk>> {
         let stmts = parse(sql)?;
         let mut binder = Binder::new(self.catalog.clone());
         let logical_planner = LogicalPlaner::default();
@@ -270,7 +270,7 @@ impl Database {
     }
 
     // Generate the execution plans for SQL queries.
-    pub fn generate_execution_plan(&self, sql: &str) -> Result<Vec<PlanRef>, Error> {
+    pub fn generate_execution_plan(&self, sql: &str) -> Result<Vec<PlanRef>> {
         let stmts = parse(sql)?;
 
         let mut binder = Binder::new(self.catalog.clone());
@@ -295,6 +295,9 @@ impl Database {
         Ok(plans)
     }
 }
+
+/// The result type of database operations.
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// The error type of database operations.
 #[derive(thiserror::Error, Debug)]

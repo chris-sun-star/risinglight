@@ -41,6 +41,9 @@ pub mod planner;
 /// Execute the queries.
 pub mod executor_v2;
 
+/// Stream processing.
+pub mod streaming;
+
 /// The legacy query engine.
 pub mod v1 {
     /// Resolve all expressions referring with their names.

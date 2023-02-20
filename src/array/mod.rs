@@ -17,22 +17,20 @@ use crate::types::{
 
 mod data_chunk;
 mod data_chunk_builder;
+mod internal_ext;
 pub mod ops;
 mod primitive_array;
+mod shuffle_ext;
+mod stream_chunk;
 mod utf8_array;
 
 pub use self::data_chunk::*;
 pub use self::data_chunk_builder::*;
+pub use self::internal_ext::*;
 pub use self::primitive_array::*;
+pub use self::shuffle_ext::*;
+pub use self::stream_chunk::*;
 pub use self::utf8_array::*;
-
-mod internal_ext;
-
-pub use internal_ext::*;
-
-mod shuffle_ext;
-
-pub use shuffle_ext::*;
 
 /// A trait over all array builders.
 ///

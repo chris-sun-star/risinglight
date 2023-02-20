@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 use std::fmt;
 use std::result::Result as RawResult;
 use std::str::FromStr;
@@ -16,6 +16,7 @@ pub struct CreateTable {
     pub table_name: String,
     pub columns: Vec<ColumnCatalog>,
     pub ordered_pk_ids: Vec<ColumnId>,
+    pub with: BTreeMap<String, DataValue>,
 }
 
 impl fmt::Display for CreateTable {
@@ -50,8 +51,9 @@ impl Binder {
     pub(super) fn bind_create_table(
         &mut self,
         name: ObjectName,
-        columns: &[ColumnDef],
-        constraints: &[TableConstraint],
+        columns: Vec<ColumnDef>,
+        constraints: Vec<TableConstraint>,
+        with_options: Vec<SqlOption>,
     ) -> Result {
         let name = lower_case_name(&name);
         let (schema_name, table_name) = split_name(&name)?;
@@ -71,7 +73,7 @@ impl Binder {
             }
         }
 
-        let mut ordered_pk_ids = Binder::ordered_pks_from_columns(columns);
+        let mut ordered_pk_ids = Binder::ordered_pks_from_columns(&columns);
         let has_pk_from_column = !ordered_pk_ids.is_empty();
 
         if ordered_pk_ids.len() > 1 {
@@ -79,7 +81,7 @@ impl Binder {
             return Err(BindError::NotSupportedTSQL);
         }
 
-        let pks_name_from_constraints = Binder::pks_name_from_constraints(constraints);
+        let pks_name_from_constraints = Binder::pks_name_from_constraints(&constraints);
         if has_pk_from_column && !pks_name_from_constraints.is_empty() {
             // can't get primary key both from "primary key(c1, c2...)" syntax and
             // column's option
@@ -91,7 +93,7 @@ impl Binder {
                 }
             }
             ordered_pk_ids =
-                Binder::ordered_pks_from_constraint(&pks_name_from_constraints, columns);
+                Binder::ordered_pks_from_constraint(&pks_name_from_constraints, &columns);
         }
 
         let mut columns: Vec<ColumnCatalog> = columns
@@ -109,11 +111,17 @@ impl Binder {
             columns[index as usize].set_nullable(false);
         }
 
+        let with = with_options
+            .into_iter()
+            .map(|opt| (opt.name.value, opt.value.into()))
+            .collect();
+
         let create = self.egraph.add(Node::CreateTable(CreateTable {
             schema_id: schema.id(),
             table_name: table_name.into(),
             columns,
             ordered_pk_ids,
+            with,
         }));
         Ok(create)
     }
