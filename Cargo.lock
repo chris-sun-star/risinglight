@@ -2769,6 +2769,7 @@ dependencies = [
  "prost",
  "pyo3",
  "pyo3-build-config",
+ "rand",
  "ref-cast",
  "regex",
  "risinglight_proto",
