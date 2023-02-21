@@ -184,7 +184,7 @@ impl Manifest {
 }
 
 impl SecondaryStorage {
-    pub(super) fn apply_create_table(&self, entry: &CreateTableEntry) -> StorageResult<()> {
+    pub(super) fn apply_create_table(&self, entry: &CreateTableEntry) -> StorageResult<TableRefId> {
         let CreateTableEntry {
             schema_id,
             table_name,
@@ -220,7 +220,7 @@ impl SecondaryStorage {
         );
         self.tables.write().insert(id, table);
 
-        Ok(())
+        Ok(id)
     }
 
     pub(super) async fn create_table_inner(
@@ -229,7 +229,7 @@ impl SecondaryStorage {
         table_name: &str,
         column_descs: &[ColumnCatalog],
         ordered_pk_ids: &[ColumnId],
-    ) -> StorageResult<()> {
+    ) -> StorageResult<TableRefId> {
         let entry = CreateTableEntry {
             schema_id,
             table_name: table_name.to_string(),
@@ -243,9 +243,7 @@ impl SecondaryStorage {
             .await?;
 
         // then apply to catalog
-        self.apply_create_table(&entry)?;
-
-        Ok(())
+        self.apply_create_table(&entry)
     }
 
     pub(super) fn get_table_inner(&self, table_id: TableRefId) -> StorageResult<SecondaryTable> {

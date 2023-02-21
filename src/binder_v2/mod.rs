@@ -14,6 +14,7 @@ use crate::planner::{Expr as Node, RecExpr, TypeError, TypeSchemaAnalysis};
 use crate::types::{DataTypeKind, DataValue};
 
 pub mod copy;
+mod create_mview;
 mod create_table;
 mod delete;
 mod drop;
@@ -22,6 +23,7 @@ mod insert;
 mod select;
 mod table;
 
+pub use self::create_mview::*;
 pub use self::create_table::*;
 pub use self::delete::*;
 pub use self::drop::*;
@@ -131,6 +133,12 @@ impl Binder {
                 with_options,
                 ..
             } => self.bind_create_table(name, columns, constraints, with_options),
+            Statement::CreateView {
+                materialized,
+                name,
+                query,
+                ..
+            } if materialized => self.bind_create_mview(name, *query),
             Statement::Drop {
                 object_type,
                 if_exists,

@@ -16,6 +16,7 @@ use crate::storage::{
     InMemoryStorage, SecondaryStorage, SecondaryStorageOptions, Storage, StorageColumnRef,
     StorageImpl, Table,
 };
+use crate::streaming::StreamManager;
 use crate::v1::binder::Binder;
 use crate::v1::executor::ExecutorBuilder;
 use crate::v1::logical_planner::LogicalPlaner;
@@ -27,6 +28,7 @@ use crate::v1::optimizer::Optimizer;
 pub struct Database {
     catalog: RootCatalogRef,
     storage: StorageImpl,
+    stream: Arc<StreamManager>,
     use_v1: AtomicBool,
 }
 
@@ -36,6 +38,7 @@ impl Database {
         let storage = InMemoryStorage::new();
         Database {
             catalog: storage.catalog().clone(),
+            stream: Arc::new(StreamManager::new(storage.catalog().clone())),
             storage: StorageImpl::InMemoryStorage(Arc::new(storage)),
             use_v1: AtomicBool::new(false),
         }
@@ -47,6 +50,7 @@ impl Database {
         storage.spawn_compactor().await;
         Database {
             catalog: storage.catalog().clone(),
+            stream: Arc::new(StreamManager::new(storage.catalog().clone())),
             storage: StorageImpl::SecondaryStorage(storage),
             use_v1: AtomicBool::new(false),
         }
@@ -215,12 +219,15 @@ impl Database {
             let mut binder = crate::binder_v2::Binder::new(self.catalog.clone());
             let bound = binder.bind(stmt)?;
             let optimized = crate::planner::optimize(&bound);
+
+            let catalog = self.catalog.clone();
+            let stream = self.stream.clone();
             let executor = match self.storage.clone() {
-                StorageImpl::InMemoryStorage(s) => {
-                    crate::executor_v2::build(self.catalog.clone(), s, &optimized)
+                StorageImpl::InMemoryStorage(storage) => {
+                    crate::executor_v2::build(catalog, storage, stream, &optimized)
                 }
-                StorageImpl::SecondaryStorage(s) => {
-                    crate::executor_v2::build(self.catalog.clone(), s, &optimized)
+                StorageImpl::SecondaryStorage(storage) => {
+                    crate::executor_v2::build(catalog, storage, stream, &optimized)
                 }
             };
             let output = executor.try_collect().await?;

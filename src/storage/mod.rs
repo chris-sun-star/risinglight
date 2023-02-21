@@ -66,7 +66,7 @@ pub trait Storage: Sync + Send + 'static {
         table_name: &'a str,
         column_descs: &'a [ColumnCatalog],
         ordered_pk_ids: &'a [ColumnId],
-    ) -> impl Future<Output = StorageResult<()>> + Send + 'a;
+    ) -> impl Future<Output = StorageResult<TableRefId>> + Send + 'a;
 
     fn get_table(&self, table_id: TableRefId) -> StorageResult<Self::Table>;
 

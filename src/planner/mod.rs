@@ -3,7 +3,7 @@
 use egg::{define_language, CostFunction, Id, Symbol};
 
 use crate::binder_v2::copy::ExtSource;
-use crate::binder_v2::{BoundDrop, CreateTable};
+use crate::binder_v2::{BoundDrop, CreateMView, CreateTable};
 use crate::catalog::{ColumnRefId, TableRefId};
 use crate::parser::{BinaryOperator, UnaryOperator};
 use crate::types::{ColumnIndex, DataTypeKind, DataValue, DateTimeField};
@@ -104,6 +104,8 @@ define_language! {
                                                     // output = aggs || group_keys
         CreateTable(CreateTable),
         Drop(BoundDrop),
+        CreateMViewArgs(CreateMView),
+        "create_mview" = CreateMView([Id; 2]),  // (create_mview args child)
         "insert" = Insert([Id; 3]),             // (insert table [column..] child)
         "delete" = Delete([Id; 2]),             // (delete table child)
         "copy_from" = CopyFrom([Id; 2]),        // (copy_from dest types)
