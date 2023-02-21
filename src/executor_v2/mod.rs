@@ -326,6 +326,13 @@ impl<S: Storage> Builder<S> {
             }
             .execute(),
 
+            CreateMView([args, child]) => CreateMViewExecutor {
+                args: self.node(args).as_create_mview(),
+                query: self.recexpr(child),
+                stream: self.stream.clone(),
+            }
+            .execute(),
+
             Insert([table, cols, child]) => InsertExecutor {
                 table_id: self.node(table).as_table(),
                 column_ids: (self.node(cols).as_list().iter())

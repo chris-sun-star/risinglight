@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use super::*;
-use crate::binder_v2::CreateTable;
+use crate::binder_v2::{CreateMView, CreateTable};
 use crate::storage::Storage;
 use crate::streaming::StreamManager;
 
@@ -33,5 +33,20 @@ impl<S: Storage> CreateTableExecutor<S> {
 
         let chunk = DataChunk::single(1);
         yield chunk
+    }
+}
+
+/// The executor of `create materialized view` statement.
+pub struct CreateMViewExecutor {
+    pub args: CreateMView,
+    pub query: RecExpr,
+    pub stream: Arc<StreamManager>,
+}
+
+impl CreateMViewExecutor {
+    #[try_stream(boxed, ok = DataChunk, error = ExecutorError)]
+    pub async fn execute(self) {
+        self.stream.create_mview(self.args, self.query)?;
+        yield DataChunk::single(1);
     }
 }

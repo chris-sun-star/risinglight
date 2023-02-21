@@ -1,12 +1,13 @@
 use std::collections::{BTreeMap, HashMap};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use futures::StreamExt;
 use tokio::sync::broadcast;
 
 use crate::array::{DataChunk, StreamChunk};
-use crate::binder_v2::CreateTable;
+use crate::binder_v2::CreateMView;
 use crate::catalog::{CatalogError, RootCatalogRef, TableRefId};
+use crate::planner::RecExpr;
 
 mod builder;
 mod source;
@@ -57,7 +58,7 @@ impl StreamManager {
         Ok(())
     }
 
-    pub fn create_materialized_view(&self, stmt: CreateTable) -> Result<()> {
+    pub fn create_mview(&self, stmt: CreateMView, query: RecExpr) -> Result<()> {
         todo!()
     }
 }
